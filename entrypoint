@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+source /setup_common.sh
+source /decrypt_secrets.sh
+
+if [ -f "$HOME/.aws/credentials" ]; then
+  aws_config=`cat $HOME/.aws/credentials`
+
+  export AWS_ACCESS_KEY_ID=$(echo $aws_config | sed -r -e 's/.*aws_access_key_id = (\w+).*/\1/g')
+  export AWS_SECRET_ACCESS_KEY=$(echo $aws_config | sed -r -e 's/.*aws_secret_access_key = (.+).*/\1/g')
+fi
+
+sh -c "$@"

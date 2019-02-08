@@ -35,6 +35,6 @@ config :ex_aws,
   secret_access_key: [{:system, "AWS_SECRET_ACCESS_KEY"}, :instance_role],
   region: "eu-west-1"
 
-config :dynamo_migrate, :dynamo_db,
+config :dynamo_migrate,
   old_plate_number_table: "sloth_plate_number_production_new",
-  new_plate_number_table: ""
+  new_plate_number_table: "sloth_plate_number_hashed_staging"

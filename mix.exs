@@ -22,9 +22,12 @@ defmodule DynamoMigrate.MixProject do
   defp deps do
     [
       {:ex_aws, "~> 2.0"},
-      {:ex_aws_dynamo, "~> 2.0"},
+      {:ex_aws_dynamo,
+       git: "https://github.com/primait/ex_aws_dynamo.git",
+       branch: "properly-handle-binary-fields"},
       {:hackney, "~> 1.9"},
-      {:jason, "~> 1.1"}
+      {:jason, "~> 1.1"},
+      {:configparser_ex, "~> 2.0"}
     ]
   end
 end

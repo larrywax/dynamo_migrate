@@ -1,20 +1,22 @@
 defmodule DynamoMigrate do
+  require Logger
   alias ExAws.Dynamo
   alias DynamoMigrate.Repo
   alias DynamoMigrate.Repo.OldPlateNumber
 
-  @old_plate_number_table Application.get_env(:dynamo_migrate, :dynamo_db)[
-                            :old_plate_number_table
-                          ]
+  @old_plate_number_table Application.get_env(:dynamo_migrate, :old_plate_number_table)
+  @old_fiscal_code_table Application.get_env(:dynamo_migrate, :old_fiscal_code_table)
 
   def run do
+    Logger.info("Start plate number table import")
+
     @old_plate_number_table
-    |> Dynamo.scan(limit: 1)
+    |> Dynamo.scan(limit: 100)
     |> ExAws.request!()
     |> Repo.parse_result(OldPlateNumber)
-    |> Enum.each(fn rec ->
-        Repo.convert_record(rec)
-        |> IO.inspect()
-      end)
+    |> Enum.map(&Repo.convert_record/1)
+    |> Enum.map(&Repo.insert(Application.get_env(:dynamo_migrate, :new_plate_number_table), &1))
+
+    Logger.info("Plate number table import completed!")
   end
 end
