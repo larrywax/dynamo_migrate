@@ -6,7 +6,8 @@ defmodule DynamoMigrate.Repo do
   alias ExAws.Dynamo
   alias DynamoMigrate.Repo.OldPlateNumber
   alias DynamoMigrate.Repo.NewPlateNumber
-  # alias DynamoMigrate.Repo.OldOldFiscalCode
+  alias DynamoMigrate.Repo.OldFiscalCode
+  alias DynamoMigrate.Repo.NewFiscalCode
 
   defp content_to_string(content) do
     content
@@ -26,6 +27,17 @@ defmodule DynamoMigrate.Repo do
     Map.put(record, :hash, h)
   end
 
+  defp add_hash(record = %{fiscal_code: fc, record_type: rt, content: content}) do
+    c =
+      content
+      |> decompress()
+      |> content_to_string()
+
+    h = :crypto.hash(:sha256, "#{fc}#{rt}#{c}")
+
+    Map.put(record, :hash, h)
+  end
+
   def convert_record(
         record = %OldPlateNumber{
           id: _id,
@@ -41,20 +53,20 @@ defmodule DynamoMigrate.Repo do
     |> add_hash()
   end
 
-  # def convert_record(
-  #       record = %OldFiscalCode{
-  #         id: _id,
-  #         fiscal_code: _fiscal_code,
-  #         record_type: _record_type,
-  #         content: _content,
-  #         timestamp_ttl: _timestamp
-  #       }
-  #     ) do
-  #   record
-  #   |> Map.from_struct()
-  #   |> Map.drop([:id])
-  #   |> add_hash()
-  # end
+  def convert_record(
+        record = %OldFiscalCode{
+          id: _id,
+          fiscal_code: _fiscal_code,
+          record_type: _record_type,
+          content: _content,
+          timestamp_ttl: _timestamp
+        }
+      ) do
+    record
+    |> Map.from_struct()
+    |> Map.drop([:id])
+    |> add_hash()
+  end
 
   def insert(table, %{
         hash: hash,
@@ -76,25 +88,25 @@ defmodule DynamoMigrate.Repo do
     |> do_insert()
   end
 
-  # def insert(table, %{
-  #       hash: hash,
-  #       fiscal_code: fiscal_code,
-  #       record_type: record_type,
-  #       content: content,
-  #       timestamp_ttl: timestamp
-  #     }) do
-  #   Dynamo.put_item(
-  #     table,
-  #     %NewFiscalCode{
-  #       hash: hash,
-  #       fiscal_code: fiscal_code,
-  #       record_type: record_type,
-  #       content: content,
-  #       timestamp_ttl: timestamp
-  #     }
-  #   )
-  #   |> do_insert()
-  # end
+  def insert(table, %{
+        hash: hash,
+        fiscal_code: fiscal_code,
+        record_type: record_type,
+        content: content,
+        timestamp_ttl: timestamp
+      }) do
+    Dynamo.put_item(
+      table,
+      %NewFiscalCode{
+        hash: hash,
+        fiscal_code: fiscal_code,
+        record_type: record_type,
+        content: content,
+        timestamp_ttl: timestamp
+      }
+    )
+    |> do_insert()
+  end
 
   defp do_insert(payload) do
     case ExAws.request(payload) do
