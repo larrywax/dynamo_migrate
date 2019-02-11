@@ -68,13 +68,16 @@ defmodule DynamoMigrate.Repo do
     |> add_hash()
   end
 
-  def insert(table, %{
-        hash: hash,
-        plate_number: plate_number,
-        record_type: record_type,
-        content: content,
-        timestamp_ttl: timestamp
-      }) do
+  def insert(
+        %{
+          hash: hash,
+          plate_number: plate_number,
+          record_type: record_type,
+          content: content,
+          timestamp_ttl: timestamp
+        },
+        table
+      ) do
     Dynamo.put_item(
       table,
       %NewPlateNumber{
@@ -88,13 +91,16 @@ defmodule DynamoMigrate.Repo do
     |> do_insert()
   end
 
-  def insert(table, %{
-        hash: hash,
-        fiscal_code: fiscal_code,
-        record_type: record_type,
-        content: content,
-        timestamp_ttl: timestamp
-      }) do
+  def insert(
+        %{
+          hash: hash,
+          fiscal_code: fiscal_code,
+          record_type: record_type,
+          content: content,
+          timestamp_ttl: timestamp
+        },
+        table
+      ) do
     Dynamo.put_item(
       table,
       %NewFiscalCode{
@@ -110,12 +116,13 @@ defmodule DynamoMigrate.Repo do
 
   defp do_insert(payload) do
     case ExAws.request(payload) do
-      {:ok, term} ->
+      {:ok, _} ->
         Logger.info("Record inserted succesfully")
         :ok
 
       {:error, term} ->
         Logger.error("Error in insert: #{inspect(term)}")
+        :error
     end
   end
 
@@ -123,6 +130,10 @@ defmodule DynamoMigrate.Repo do
     item
     |> Map.get("Items", [])
     |> Enum.map(&Dynamo.decode_item(&1, as: module))
+  end
+
+  def parse(item, module) do
+    Dynamo.decode_item(item, as: module)
   end
 
   defp decompress(content) do

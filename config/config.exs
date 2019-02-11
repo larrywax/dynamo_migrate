@@ -37,6 +37,6 @@ config :ex_aws,
 
 config :dynamo_migrate,
   old_plate_number_table: "sloth_plate_number_production_new",
-  new_plate_number_table: "sloth_plate_number_hashed_staging",
+  new_plate_number_table: "sloth_plate_number_hashed_production",
   old_fiscal_code_table: "sloth_fiscal_code_production_new",
-  new_fiscal_code_table: "sloth_fiscal_code_hashed_staging"
+  new_fiscal_code_table: "sloth_fiscal_code_hashed_production"
